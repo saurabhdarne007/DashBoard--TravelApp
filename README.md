@@ -1,6 +1,8 @@
 # DashBoard--TravelApp
 it is dashboard of traveling  app adding trips and  transactions, wallet etc.
 <br>
-laguage used - HTML, CSS, Js using internal way for code
+build with using laguages - html, css, js.
+<br>
+using iternal CSS AND JS in HTML file to create a single code file
 <br>
 Author - Saurabh Darne
