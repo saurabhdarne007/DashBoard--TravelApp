@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Wallet Dashboard</title>
+    <style>
+        :root {
+            --bg: #0f1720;
+            --panel: #111827;
+            --muted: #9aa6b2;
+            --accent: #06b6d4;
+            --card: #0b1220;
+            --success: #10b981;
+            --danger: #ef4550;
+            --radius: 10px;
+            --gap: 14px;
+            --pad: 14px;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0;
+        }
+        
+        html, body {
+            height: 100%;
+            font-family: system-ui, sans-serif;
+            background: var(--bg);
+            color: #e6eef3;
+        }
+
+        body {
+            padding: var(--pad);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            grid-template-rows: auto 1fr;
+            gap: var(--gap);
+        }
+
+        .panel {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: var(--pad);
+            border: 1px solid rgba(255,255,255,0.03);
+        }
+
+        h3 { 
+            font-size: 14px; 
+            color: var(--muted); 
+            margin-bottom: 8px; 
+        }
+
+        /* Transactions */
+        .latest { 
+            grid-column: 1; 
+            grid-row: 1 / 3; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .tx-list { 
+            flex: 1;
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            overflow-y: auto;
+        }
+        
+        .tx { 
+            display: flex; 
+            justify-content: space-between; 
+            background: rgba(255,255,255,0.02); 
+            padding: 10px; 
+            border-radius: 8px;
+        }
+        
+        .tx .cat { 
+            font-size: 13px; 
+            color: var(--muted); 
+        }
+        
+        .tx .amt { 
+            font-weight: 700; 
+        }
+
+        /* Wallet */
+        .wallet { 
+            grid-column: 3; 
+            grid-row: 1;
+        }
+        
+        .amount { 
+            font-size: 28px; 
+            font-weight: 700; 
+            margin-bottom: 10px; 
+        }
+        
+        .actions { 
+            display: flex; 
+            gap: 8px; 
+            margin-top: 12px; 
+        }
+        
+        .btn {
+            flex: 1; 
+            padding: 8px 10px; 
+            border-radius: 8px;
+            border: none; 
+            cursor: pointer; 
+            font-weight: 600;
+            background: rgba(255,255,255,0.03); 
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn.primary { 
+            background: var(--accent); 
+            color: #022429; 
+        }
+
+        /* Book Trip */
+        .book { 
+            grid-column: 2; 
+            grid-row: 1;
+        }
+        
+        .row { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 8px; 
+        }
+        
+        input, select {
+            width: 100%; 
+            padding: 9px 10px; 
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: transparent; 
+            color: inherit;
+        }
+        
+        .search-btn {
+            padding: 9px 12px; 
+            border-radius: 8px; 
+            border: 0;
+            background: var(--accent); 
+            color: #022429; 
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Cards */
+        .cards { 
+            grid-column: 2; 
+            grid-row: 2;
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: var(--gap); 
+        }
+        
+        .card-body { 
+            font-size: 16px; 
+            font-weight: 700; 
+        }
+        
+        .list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; 
+            margin-top: 8px; 
+        }
+        
+        .item { 
+            display: flex; 
+            justify-content: space-between; 
+            font-size: 14px; 
+            color: var(--muted); 
+        }
+        
+        .total { 
+            margin-top: 8px; 
+            font-weight: 800; 
+        }
+
+        /* Right panels */
+        .right-top { 
+            grid-column: 3; 
+            grid-row: 2;
+            display: flex; 
+            flex-direction: column; 
+            gap: var(--gap); 
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 250px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 980px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            .latest, .book, .wallet, .cards, .right-top { 
+                grid-column: 1; 
+            }
+            .latest {
+                grid-row: auto;
+                max-height: 300px;
+            }
+            .cards { 
+                grid-template-columns: 1fr; 
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+            }
+            
+            .container {
+                gap: 10px;
+            }
+            
+            .row {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .panel {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left: Transactions -->
+        <div class="panel latest">
+            <h3>Latest transactions</h3>
+            <div class="tx-list">
+                <div class="tx">
+                    <div>
+                        <div class="cat">Today • Food</div>
+                        <div style="font-size:12px;color:var(--muted)">10:24 AM</div>
+                    </div>
+                    <div class="amt" style="color:var(--danger)">- ₹150.00</div>
+                </div>
+                <div class="tx">
+                    <div>
+                        <div class="cat">25-06 • Fashion</div>
+                        <div style="font-size:12px;color:var(--muted)">Online</div>
+                    </div>
+                    <div class="amt" style="color:var(--danger)">- ₹2,499.00</div>
+                </div>
+                <div class="tx">
+                    <div>
+                        <div class="cat">15-05 • Loan pay</div>
+                        <div style="font-size:12px;color:var(--muted)">Bank transfer</div>
+                    </div>
+                    <div class="amt" style="color:var(--success)">+ ₹81,000</div>
+                </div>
+                <div class="tx">
+                    <div>
+                        <div class="cat">18-04 • Beauty</div>
+                        <div style="font-size:12px;color:var(--muted)">Card</div>
+                    </div>
+                    <div class="amt" style="color:var(--danger)">- ₹150.00</div>
+                </div>
+                <div class="tx">
+                    <div>
+                        <div class="cat">12-04 • Salary</div>
+                        <div style="font-size:12px;color:var(--muted)">Direct deposit</div>
+                    </div>
+                    <div class="amt" style="color:var(--success)">+ ₹50,000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Top: Book Trip -->
+        <div class="panel book">
+            <h3>Book a new trip</h3>
+            <div class="row">
+                <select id="tripType">
+                    <option>Flights</option>
+                    <option>Riders</option>
+                    <option>Bus / Train</option>
+                </select>
+                <select id="tripClass" style="width:120px">
+                    <option>Economy</option>
+                    <option>Business</option>
+                </select>
+            </div>
+            <div class="row">
+                <input id="fromInput" placeholder="From (city or station)" />
+                <input id="toInput" placeholder="To (city or station)" />
+            </div>
+            <div class="row">
+                <input id="dateInput" type="date" style="max-width:220px"/>
+                <button class="search-btn" id="searchBtn">Search</button>
+            </div>
+        </div>
+
+        <!-- Right Top: Wallet -->
+        <div class="panel wallet">
+            <h3>Wallet</h3>
+            <div class="amount" id="walletAmount">₹ 70,000</div>
+            <div style="font-size:12px;color:var(--muted)">Available balance</div>
+            <div class="actions">
+                <button class="btn primary" id="depositBtn">Deposit</button>
+                <button class="btn" id="withdrawBtn">Withdraw</button>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:12px">
+                Recent expense: ₹ 3,552 • Last update 1h ago
+            </div>
+        </div>
+
+        <!-- Middle Bottom: Cards -->
+        <div class="cards">
+            <div class="panel">
+                <h3>Rides</h3>
+                <div class="list">
+                    <div class="item"><span>02-09-2025</span><strong>₹120</strong></div>
+                    <div class="item"><span>28-11-2025</span><strong>₹30</strong></div>
+                    <div class="item"><span>19-11-2025</span><strong>₹90</strong></div>
+                </div>
+                <div class="total">Total: ₹210</div>
+            </div>
+            <div class="panel">
+                <h3>Flights</h3>
+                <div class="list">
+                    <div class="item"><span>05-10-2025</span><strong>₹30,000</strong></div>
+                    <div class="item"><span>09-10-2025</span><strong>₹45,000</strong></div>
+                </div>
+                <div class="total">Total: ₹75,000</div>
+            </div>
+            <div class="panel">
+                <h3>Bus / Train Tickets</h3>
+                <div class="list">
+                    <div class="item"><span>09-09-2025</span><strong>₹30</strong></div>
+                    <div class="item"><span>11-11-2025</span><strong>₹80</strong></div>
+                    <div class="item"><span>13-12-2025</span><strong>₹28</strong></div>
+                </div>
+                <div class="total">Total: ₹138</div>
+            </div>
+            <div class="panel">
+                <h3>Saved (placeholder)</h3>
+                <div style="height:150px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700">
+                    No saved items yet
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Bottom: Summary -->
+        <div class="right-top">
+            <div class="panel">
+                <h3>Summary</h3>
+                <div style="display:flex;justify-content:space-between">
+                    <div>
+                        <div style="font-size:13px;color:var(--muted)">Monthly spend</div>
+                        <div style="font-weight:800;font-size:20px">₹ 12,450</div>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;color:var(--muted)">Income</div>
+                        <div style="font-weight:800;font-size:20px;color:var(--success)">₹ 81,000</div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <h3>Quick actions</h3>
+                <div style="display:flex;gap:8px">
+                    <button class="btn" id="sendBtn" style="flex:1">Send</button>
+                    <button class="btn" id="requestBtn" style="flex:1">Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple JavaScript for interactions
+        document.getElementById('depositBtn').addEventListener('click', function() {
+            alert('Deposit functionality would go here');
+        });
+
+        document.getElementById('withdrawBtn').addEventListener('click', function() {
+            alert('Withdrawal functionality would go here');
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', function() {
+            const from = document.getElementById('fromInput').value;
+            const to = document.getElementById('toInput').value;
+            const date = document.getElementById('dateInput').value;
+            const type = document.getElementById('tripType').value;
+            const cls = document.getElementById('tripClass').value;
+            
+            if (!from || !to || !date) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            alert(`Searching for ${type} (${cls}) from ${from} to ${to} on ${date}`);
+        });
+
+        document.getElementById('sendBtn').addEventListener('click', function() {
+            alert('Send money functionality would go here');
+        });
+
+        document.getElementById('requestBtn').addEventListener('click', function() {
+            alert('Request money functionality would go here');
+        });
+
+        // Set today's date as default for the date input
+        document.getElementById('dateInput').valueAsDate = new Date();
+    </script>
+</body>
+</html>
